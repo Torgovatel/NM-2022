@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """
 Модуль Matrix.py.
 Определяет базовую функциональность для реализации поставленной задачи.
@@ -6,7 +8,6 @@
 import random
 from BaseFunctions import *
 from typing import List
-from __future__ import annotations
 
 
 class Matrix:
@@ -15,7 +16,7 @@ class Matrix:
 
     Поля:
         n - размерность матрицы.
-        buf - буфер соответствующего этой матрице вложенного списка.
+        a - буфер соответствующего этой матрице вложенного списка.
     """
     def __init__(self, n: int):
         """
@@ -213,5 +214,6 @@ class Matrix:
         # Перемножаем
         f = [0 for _ in range(self.n)]
         for i in range(self.n):
-            f[i] = self.a[0][i] * x[i]
+            for k in range(self.n):
+                f[i] += self.a[i][k] * x[k]
         return f

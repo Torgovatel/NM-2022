@@ -50,7 +50,7 @@ def test():
 
             if "gen" in cmd_list:
                 found_cmd = True
-                gen(cmd_list)
+                gen()
 
             if not found_cmd:
                 print("Undefined command")

@@ -103,6 +103,8 @@ def exhaustion() -> Tuple[float, List[float]]:
     for i in range(BP.N):
         while x_cur[i] == 0:
             x_cur[i] = random.randint(BP.a, BP.b + 1)
+    x_cur = [A1.a[i][ind] for i in range(A1.n)]
+    #x_cur = xn[:]
     i_cur = 0
     x_prev = 0
     b_prev = 0

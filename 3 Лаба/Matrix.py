@@ -105,11 +105,13 @@ class Matrix:
         """
         # Заполнение h
         if bh is None:
-            bh = self.n + 1
+            bh = BP.bh
         if ah is None:
-            ah = 1
+            ah = BP.ah
         if hstep is None:
             hstep = (bh - ah) / self.n
+            if abs(bh) == abs(ah):
+                hstep = (bh - ah - 1) / self.n
         if h is None:
             h = []
         if h == []:
@@ -119,6 +121,9 @@ class Matrix:
         for i in range(self.n):
             self.a[i][i] = h[i]
         w = [random.randint(a, b + 1) for _ in range(self.n)]
+        for i in range(len(w)):
+            while w[i] == 0:
+                w[i] = random.randint(a, b + 1)
         w = normalize(w)
         H = [[0 for i in range(self.n)] for j in range(self.n)]
         for i in range(self.n):
@@ -133,7 +138,6 @@ class Matrix:
         print(Hshd)
         X = [[Hshd.a[j][i] for j in range(self.n)] for i in range(self.n)]
         return h, X
-
 
     def __to_str__(self, arr: List[List[float]]) -> str:
         """
@@ -158,7 +162,6 @@ class Matrix:
             res += '\n'
         return res
 
-
     def __str__(self) -> str:
         """
         Переопределение пользовательского строкового представления.
@@ -166,7 +169,6 @@ class Matrix:
             строку из исходной матрицы (см. __to_str__).
         """
         return self.__to_str__(self.a)
-
 
     def __repr__(self) -> str:
         """
@@ -176,7 +178,6 @@ class Matrix:
             отладочную информацию внутреннего буфера.
         """
         return self.a.__repr__()
-
 
     def __mul__(self, x: object) -> object:
         """

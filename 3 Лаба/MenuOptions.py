@@ -4,11 +4,6 @@
 """
 
 from Matrix import *
-import random
-import matplotlib.pyplot as plt
-import time
-import math
-from typing import List
 from BaseFunctions import *
 import BaseParams as BP
 
@@ -49,6 +44,9 @@ def status():
           f"\tКоличество auto опытов: cnt = {BP.cnt}",
           f"\tРазмерность системы: N = {BP.N}",
           f"\tИнтервал генерации: ab = [{BP.a}, {BP.b}]",
+          f"\tИнтервал генерации: abh = [{BP.ah}, {BP.bh}]",
+          f"\tТочность нахождения h: h_eps = {BP.h_eps}",
+          f"\tТочность нахождения угла по x: x_eps = {BP.x_eps}",
           f"\tНаходить по итерациям: by_iter = {BP.by_iter}",
           f"\tКоличество итераций при итерировании: iter = {BP.iter}",
           f"\tМатрица = {('fill', 'empty')[BP.matrix is None]}",
@@ -63,8 +61,11 @@ def solve():
     Выводит на экран найденное собственное значение и соответствующий ему собственный вектор.
     """
     if not (BP.matrix is None) and not (BP.X is None) and not (BP.h is None):
-        h, x = exhaustion()
-        print(f"h{BP.N-1} = {h}, x{BP.N-1} = {x}")
+        (h_ind, h), x, r, cnt_iter = exhaustion()
+        print(f"{cnt_iter} итераций с точностью r = {r}",
+              f"h{h_ind+1} = {h}",
+              f"x{h_ind+1} = {x}",
+              sep='\n')
 
 
 def read(cmd_list: List[str]) -> bool:
@@ -117,8 +118,16 @@ def mprint(cmd_list: List[str]) -> bool:
 
     if cmd_list[ind] == "-x":
         if not (BP.X is None):
-            for i in range(len(BP.X)):
-                print(f"x{i+1}: {BP.X[i]}")
+            num = cmd_list.index("-x")
+            if len(cmd_list) > num + 1 and cmd_list[num + 1][0] != "-":
+                num = int(cmd_list[num + 1])
+                if 0 <= num <= BP.N:
+                    print(f"x{num}: {BP.X[num-1]}")
+                else:
+                    print("Некорректный номер")
+            else:
+                for i in range(len(BP.X)):
+                    print(f"x{i+1}: {BP.X[i]}")
         return True
     return False
 
@@ -192,3 +201,37 @@ def set_ab(cmd_list: List[str]):
         cmd_list: список введенных команд (для дальнейшего поиска значения флага).
     """
     BP.a, BP.b = int(cmd_list[cmd_list.index("-ab") + 1]), int(cmd_list[cmd_list.index("-ab") + 2])
+
+def set_abh(cmd_list: List[str]):
+    """
+    Функция, вызываемая в случае ввода флага -abh <val1> <val2>.
+    Устанавливает переданные значения в системные настройки [ah,bh] - интервал генерации собственных значений.
+
+    Args:
+        cmd_list: список введенных команд (для дальнейшего поиска значения флага).
+       """
+    BP.ah, BP.bh = int(cmd_list[cmd_list.index("-abh") + 1]), int(cmd_list[cmd_list.index("-abh") + 2])
+
+
+def set_h_eps(cmd_list: List[str]):
+    """
+    Функция, вызываемая в случае ввода флага -h_eps <val>.
+    Устанавливает переданные значения в системную настройку h_eps - точность поиска отклонения по h.
+
+    Args:
+        cmd_list: список введенных команд (для дальнейшего поиска значения флага).
+    """
+    ind = cmd_list.index("-h_eps") + 1
+    BP.h_eps = float(cmd_list[ind])
+
+
+def set_x_eps(cmd_list: List[str]):
+    """
+    Функция, вызываемая в случае ввода флага -x_eps <val>.
+    Устанавливает переданные значения в системную настройку x_eps - точность поиска отклонения угла по x.
+
+    Args:
+        cmd_list: список введенных команд (для дальнейшего поиска значения флага).
+    """
+    ind = cmd_list.index("-x_eps") + 1
+    BP.x_eps = float(cmd_list[ind])

@@ -1,5 +1,6 @@
 from MenuOptions import *
 from BaseFunctions import time_in_min_sec
+import time
 
 
 def test():
@@ -34,6 +35,18 @@ def test():
                 set_ab(cmd_list)
                 found_cmd = True
 
+            if "-abh" in cmd_list:
+                set_abh(cmd_list)
+                found_cmd = True
+
+            if "-h_eps" in cmd_list:
+                set_h_eps(cmd_list)
+                found_cmd = True
+
+            if "-x_eps" in cmd_list:
+                set_x_eps(cmd_list)
+                found_cmd = True
+
             if "-iter" in cmd_list:
                 set_iter(cmd_list)
                 found_cmd = True
@@ -51,6 +64,10 @@ def test():
             if "gen" in cmd_list:
                 found_cmd = True
                 gen()
+
+            if "test" in cmd_list:
+                found_cmd = True
+                average_by_test()
 
             if not found_cmd:
                 print("Undefined command")

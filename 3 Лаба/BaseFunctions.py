@@ -3,6 +3,7 @@
 import random
 import BaseParams as BP
 from typing import List, Tuple
+import MenuOptions
 
 def norm(w: List[float]) -> float:
     """
@@ -83,16 +84,23 @@ def corner(v1: List[float], v2: List[float]) -> float:
     return abs(1-res)
 
 
-def exhaustion() -> Tuple[float, List[float]]:
+def exhaustion() -> Tuple[Tuple[int, float], List[float], float, int]:
     """
     Функция метода исчерпывания.
     Находит 2 максимальное по модулю собственное значение матрицы, и соответсвующий ему собственный вектор.
 
     Returns:
-    Найденное собственное значение и соответсвующий ему собственный вектор.
+    ( (индекс с.з., с.з), собственный вектор, оценку точности решения, количество выполненных итераций).
     """
     A1 = BP.matrix.copy()
     tmp = get_list_without_cnt_of_abs_max(BP.h, 0)
+    ind = get_max_abs_index(tmp)
+    hn = BP.h[ind]
+    xn = BP.X[ind]
+    for i in range(BP.N):
+        for j in range(BP.N):
+            A1.a[i][j] -= hn * xn[i] * xn[j]
+    tmp = get_list_without_cnt_of_abs_max(tmp, 1)
     ind = get_max_abs_index(tmp)
     hn = BP.h[ind]
     xn = BP.X[ind]
@@ -104,21 +112,86 @@ def exhaustion() -> Tuple[float, List[float]]:
         while x_cur[i] == 0:
             x_cur[i] = random.randint(BP.a, BP.b + 1)
     x_cur = [A1.a[i][ind] for i in range(A1.n)]
-    #x_cur = xn[:]
     i_cur = 0
     x_prev = 0
     b_prev = 0
     b_cur = 0
     while (BP.by_iter and i_cur < BP.iter) or \
-            (i_cur < 1 or abs(b_prev - b_cur) > BP.h_eps and corner(x_cur, x_prev) > BP.v_eps):
+            (not BP.by_iter and (i_cur < 1 or abs(b_prev - b_cur) > BP.h_eps and corner(x_cur, x_prev) > BP.x_eps)):
         v_cur = normalize(x_cur)
         x_prev = x_cur
         x_cur = A1 * v_cur
         b_prev = b_cur
         b_cur = sum([v_cur[i] * x_cur[i] for i in range(BP.N)])
         i_cur += 1
-    print(f"{i_cur} итераций:")
-    return b_cur, normalize(x_cur)
+    tmp = get_list_without_cnt_of_abs_max(tmp, 1)
+    ind = get_max_abs_index(tmp)
+    x_cur = normalize(x_cur)
+    r = 0
+    tmp = A1 * x_cur
+    for i in range(len(tmp)):
+        tmp[i] -= b_cur * x_cur[i]
+    r = max(list(map(lambda x: abs(x), tmp)))
+    return (ind, b_cur), x_cur, r, i_cur
+
+
+def rate(x: List[float], xt: List[float]) -> float:
+    """
+    Метод подсчета ошибки нахождения вектора-решения.
+
+    Args:
+        x: подсчитанный вектор.
+        xt: точный вектор.
+
+    Returns:
+        первую норму разности векторов.
+    """
+    size = len(x)
+    d = []
+    for i in range(size):
+        d.append(abs(x[i] - xt[i]))
+    return max(map(lambda x: abs(x), d))
+
+
+def average_by_test():
+    """
+    Метод тестирования по вычислению средних значений.
+    Запускается в случае ввода команды test.
+    Выводит на экран таблицу, содержащую все основные данные о работе тестирующей системы.
+    """
+    list_h, list_x, list_r, list_iter_cnt = [], [], [], []
+    list_h_t, list_x_t = [], []
+    for i in range(BP.cnt):
+        try:
+            MenuOptions.gen()
+            (h_ind, h), x, r, iter_cnt = exhaustion()
+            list_h.append(h)                                # h подсчитанное
+            list_h_t.append(BP.h[h_ind])                    # ht точное
+            list_x.append(x[:])                             # x подсчитанный
+            list_x_t.append(BP.X[h_ind][:])                 # xt точный
+            list_r.append(r)                                # r подсчитанный
+            list_iter_cnt.append(iter_cnt)                  # cnt_iter подсчитанный
+        except Exception as e:
+            e.with_traceback()
+
+    h_aver = sum([abs(list_h[i] - list_h_t[i]) for i in range(len(list_h))]) / len(list_h)
+    x_aver = sum([rate(list_x[i], list_x_t[i]) for i in range(len(list_x))]) / len(list_x)
+    r_aver = sum(list_r) / len(list_r)
+    iter_cnt_aver = sum(list_iter_cnt) / len(list_iter_cnt)
+    string = "|      " + str(BP.N).ljust(6) + " |" + \
+             "  " + f"  [{BP.ah} ; {BP.bh}]".ljust(12) + "  |" + \
+             "      " + f"{BP.h_eps}".ljust(10) + "   |" + \
+             "  " + f"{h_aver}"[:14].ljust(14) + "  |" + \
+             "  " + f"{x_aver}"[:14].ljust(14) + "  |" + \
+             "  " + f"{r_aver}"[:14].ljust(14) + "  |" + \
+             "     " + f"{iter_cnt_aver}".ljust(8) + " |"
+    # символы:       11              12            11                  18                 17                 17                14
+    print("+-------------+----------------+-------------------+------------------+------------------+------------------+--------------+",
+         f"| Размерность |   Диапазон h   |   h_esp = x_eps   |   Ср. оценка h   |   Ср. оценка x   |   Ср. оценка r   | Cр. cnt_iter |",
+          "+-------------+----------------+-------------------+------------------+------------------+------------------+--------------+",
+          string,
+          "+-------------+----------------+-------------------+------------------+------------------+------------------+--------------+",
+          sep='\n')
 
 
 def time_in_min_sec(t: float) -> str:

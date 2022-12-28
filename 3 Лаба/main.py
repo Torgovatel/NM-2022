@@ -21,44 +21,12 @@ def test():
                 set_N(cmd_list)
                 found_cmd = True
 
-            if "-l" in cmd_list:
-                set_L(cmd_list)
-                found_cmd = True
-
-            if "-k" in cmd_list:
-                set_k(cmd_list)
-                found_cmd = True
-
             if "-cnt" in cmd_list:
                 set_cnt(cmd_list)
                 found_cmd = True
 
             if "-ab" in cmd_list:
                 set_ab(cmd_list)
-                found_cmd = True
-
-            if "-good" in cmd_list:
-                set_good(cmd_list)
-                found_cmd = True
-
-            if "-by_float" in cmd_list:
-                set_by_float(cmd_list)
-                found_cmd = True
-
-            if "-type" in cmd_list:
-                set_type(cmd_list)
-                found_cmd = True
-
-            if "-gauss_tape" in cmd_list:
-                set_gauss_tape(cmd_list)
-                found_cmd = True
-
-            if "-debug" in cmd_list:
-                set_debug(cmd_list)
-                found_cmd = True
-
-            if "auto_test" in cmd_list:
-                auto_test(cmd_list)
                 found_cmd = True
 
             if "read" in cmd_list:
@@ -68,15 +36,8 @@ def test():
                 found_cmd = mprint(cmd_list)
 
             if "gen" in cmd_list:
-                found_cmd = gen(cmd_list)
-
-            if "solve" in cmd_list:
-                solve()
                 found_cmd = True
-
-            if "analyze" in cmd_list:
-                analyze(cmd_list)
-                found_cmd = True
+                gen(cmd_list)
 
             if not found_cmd:
                 print("Undefined command")

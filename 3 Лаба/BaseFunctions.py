@@ -29,14 +29,3 @@ def rate(x, xt):
         # else:
         #     d.append(abs(x[i] - xt[i]))
     return max(map(lambda x: abs(x), d))
-
-
-# Подсчет средней ошибки для заданного метода
-def average_by_test(func):
-    x, f = func()
-    # Учитывая машинную точность, считаем среднее по минимуму из 2 возможных формул
-    x_rate, f_rate = 0., 0.
-    for i in range(len(x)):
-        x_rate = (x_rate * i + x[i]) / (i + 1)
-        f_rate = (f_rate * i + f[i]) / (i + 1)
-    return min((x_rate, sum(x) / len(x))), min((f_rate, sum(f) / len(f)))

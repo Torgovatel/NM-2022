@@ -37,7 +37,7 @@ class Matrix:
                 c.a[i][j], c.a[j][i] = c.a[j][i], c.a[i][j]
         return c
 
-    def random(self, a, b, h=None, ah=None, bh=None, hstep=None):
+    def generate(self, a, b, h=None, ah=None, bh=None, hstep=None):
         # Заполнение h
         if bh is None:
             bh = b
@@ -66,7 +66,9 @@ class Matrix:
         Hshd.a = H
         HshdT = Hshd.transponent()
         self.a = (Hshd * self * HshdT).a
-        print(h)
+        print(Hshd)
+        X = [[Hshd.a[j][i] for j in range(self.n)] for i in range(self.n)]
+        return h, X
 
 
     # Преобразование матрицы в строку для вывода по заданному буферу
@@ -94,6 +96,12 @@ class Matrix:
 
     # Переопределение умножения
     def __mul__(self, x):
+        if type(x) == float:
+            res = Matrix(self.n)
+            for i in range(self.n):
+                for j in range(self.n):
+                    res.a[i][j] = self.a[i][j]*x
+            return res
         if type(x) == Matrix:
             if x.n != self.n:
                 raise ValueError(f"Несоразмерные матрицы: self.n = {self.n}, x.n = {x.n}")

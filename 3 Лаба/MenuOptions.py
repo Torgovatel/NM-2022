@@ -25,7 +25,9 @@ def help():
           "\t\t\t* True - выводить % выполнения обработки",
           "\t\t\t* False - не выводить % выполнения обработки",
           "\tфлаги типа:",
-          "\t\t-matrix - объект : матрица",
+          "\t\t-m - объект : матрица",
+          "\t\t-h - объект : список собственных значений",
+          "\t\t-x - объект : список собственных векторов",
           sep='\n')
 
 
@@ -37,6 +39,8 @@ def status():
           f"\tРазмерность системы: N = {BP.N}",
           f"\tИнтервал генерации: ab = [{BP.a}, {BP.b}]",
           f"\tМатрица = {('fill', 'empty')[BP.matrix is None]}",
+          f"\tСобственные значения h = {('fill', 'empty')[BP.h is None]}",
+          f"\tСобственные вектора x = {('fill', 'empty')[BP.X is None]}",
           sep='\n')
 
 # в случае command = read
@@ -44,13 +48,8 @@ def status():
 def read(cmd_list):
     ind = cmd_list.index("read") + 1
 
-    # вектор считываем из одной строки
-    if cmd_list[ind] == "-vector":
-        BP.vector = [float(x) for x in input().split()][:BP.N]
-        return True
-
     # матрицу считываем из введенных и скленных вместе n строк
-    if cmd_list[ind] == "-matrix":
+    if cmd_list[ind] == "-m":
         BP.matrix = Matrix(BP.N, BP.L)
         st = ""
         for _ in range(BP.N):
@@ -66,11 +65,21 @@ def read(cmd_list):
 def mprint(cmd_list):
     ind = cmd_list.index("print") + 1
 
-    if cmd_list[ind] == "-matrix":
+    if cmd_list[ind] == "-m":
         if not (BP.matrix is None):
             print(BP.matrix)
         return True
 
+    if cmd_list[ind] == "-h":
+        if not (BP.h is None):
+            print(f"h: {BP.h}")
+        return True
+
+    if cmd_list[ind] == "-x":
+        if not (BP.X is None):
+            for i in range(len(BP.X)):
+                print(f"x{i+1}: {BP.X[i]}")
+        return True
     return False
 
 
@@ -78,11 +87,8 @@ def mprint(cmd_list):
 # генерируем пользователю текущиий объект
 def gen(cmd_list):
     ind = cmd_list.index("gen") + 1
-
-    if cmd_list[ind] == "-matrix":
-        BP.matrix = Matrix(BP.N)
-        BP.matrix.random(a=BP.a, b=BP.b)
-
+    BP.matrix = Matrix(BP.N)
+    BP.h, BP.X = BP.matrix.generate(a=BP.a, b=BP.b)
     return False
 
 

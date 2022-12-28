@@ -1,23 +1,63 @@
-"""Модуль Matrix.py определяет специальные методы"""
+"""
+Модуль Matrix.py.
+Определяет базовую функциональность для реализации поставленной задачи.
+"""
 
 import random
+from BaseFunctions import *
 from typing import List
+from __future__ import annotations
+
 
 class Matrix:
-    # Инициализатор, с полями:
-    # n - размерность матрицы
-    # a - буфер с матрицей
+    """
+    Класс квадратной матрицы.
+
+    Поля:
+        n - размерность матрицы.
+        buf - буфер соответствующего этой матрице вложенного списка.
+    """
     def __init__(self, n: int):
+        """
+        Инициализатор матрицы.
+        Создает матрицу размера NxN, заполненную 0.
+
+        Args:
+            n: размер создаваемой матрицы.
+        """
         self.n = n
         self.a = []
         self.clear(0)
 
-    # Заполнение матрицы нулями
-    def clear(self, basic_value=0) -> None:
+    def clear(self, basic_value=0):
+        """
+        Метод очистки буфера матрицы (заполняет содержимое переданным элементом).
+
+        Args:
+            basic_value: целочисленное значение для заполнения матрицы.
+        """
         self.a = [[basic_value for j in range(self.n)] for i in range(self.n)]
 
-    # Конвертация строки в матрицу
-    def read_str(self, string: str) -> None:
+    def copy(self) -> Matrix:
+        """
+        Метод копирования объекта-матрицы.
+
+        Returns:
+            возвращает глубокую копию текущего объекта класса Matrix.
+        """
+        res = Matrix(self.n)
+        for i in range(self.n):
+            for j in range(self.n):
+                res.a[i][j] = self.a[i][j]
+        return res
+
+    def read_str(self, string: str):
+        """
+        Метод заполнения содержимого матрицы строки.
+
+        Args:
+            string: строка с элементами для конвертации.
+        """
         elems = string.strip().split()
         if len(elems) != self.n ** 2:
             raise ValueError(f"Для записи матрицы было необходимо {self.n**2} значений")
@@ -27,24 +67,48 @@ class Matrix:
                 self.a[i][j] = float(elems[elem_ind])
                 elem_ind += 1
 
-    def transponent(self):
-        c = Matrix(self.n)
-        for i in range(self.n):
-            for j in range(self.n):
-                c.a[i][j] = self.a[i][j]
+    def transponent(self) -> Matrix:
+        """
+        Метод транспонирования матрицы.
+
+        Returns:
+            Возвращает новый транспонированный объект типа Matrix.
+        """
+        T = self.copy()
         for i in range(self.n):
             for j in range(i):
-                c.a[i][j], c.a[j][i] = c.a[j][i], c.a[i][j]
-        return c
+                T.a[i][j], T.a[j][i] = T.a[j][i], T.a[i][j]
+        return T
 
-    def generate(self, a, b, h=None, ah=None, bh=None, hstep=None):
+    def generate(self,
+                 a: int,
+                 b: int,
+                 h=None,
+                 ah=None,
+                 bh=None,
+                 hstep=None) -> Tuple[List[float], List[List[float]]]:
+        """
+        Метод генерации симметричной матрицы с предопределенными собственными значениями.
+        Использует алгоритм: A = HhH где H = E - 2T(w)w - матрица Хаусхолдера.
+
+        Args:
+            a: целочисленная левая граница генерации вектора w
+            b: целочисленная правая граница генерации вектора w
+            h: вещественный вектор для заполнения его собственными значениями
+            ah: целочисленная левая граница генерации вектора h
+            bh: целочисленная правая граница генерации вектора h
+            hstep: шаг генерации вектора h
+
+        Returns:
+            Возвращает список собственных значений матрицы и список соответствующих им собственных векторов.
+        """
         # Заполнение h
         if bh is None:
-            bh = b
+            bh = self.n + 1
         if ah is None:
-            ah = a
+            ah = 1
         if hstep is None:
-            hstep = (b - a) / self.n
+            hstep = (bh - ah) / self.n
         if h is None:
             h = []
         if h == []:
@@ -54,8 +118,7 @@ class Matrix:
         for i in range(self.n):
             self.a[i][i] = h[i]
         w = [random.randint(a, b + 1) for _ in range(self.n)]
-        w_abs = sum(map(lambda x: x**2, w))**0.5
-        w = list(map(lambda x: x / w_abs, w))
+        w = normalize(w)
         H = [[0 for i in range(self.n)] for j in range(self.n)]
         for i in range(self.n):
             for j in range(self.n):
@@ -71,8 +134,16 @@ class Matrix:
         return h, X
 
 
-    # Преобразование матрицы в строку для вывода по заданному буферу
     def __to_str__(self, arr: List[List[float]]) -> str:
+        """
+        Метод преобразования матрицы в строку по заданному буферу - вложенному вещественному списку.
+
+        Args:
+            arr: вложенный вещественный список (квадратная матрица) для преобразования.
+
+        Returns:
+            строку с элементами матрицы, разделенными в грамотной пропорции символами-разделителями.
+        """
         res = ""
         # Находим максимальную длину строкового представления числа (для форматирования вывода)
         max_length = max([len(str(arr[i][j])) for i in range(self.n) for j in range(self.n)]) + 1
@@ -86,18 +157,41 @@ class Matrix:
             res += '\n'
         return res
 
-    # Переопределение строкового представления
-    def __str__(self):
+
+    def __str__(self) -> str:
+        """
+        Переопределение пользовательского строкового представления.
+        Returns:
+            строку из исходной матрицы (см. __to_str__).
+        """
         return self.__to_str__(self.a)
 
-    # Переопределение вывода отладочной информации
-    def __repr__(self):
+
+    def __repr__(self) -> str:
+        """
+        Переопределение вывода отладочной информации.
+
+        Returns:
+            отладочную информацию внутреннего буфера.
+        """
         return self.a.__repr__()
 
-    # Переопределение умножения
-    def __mul__(self, x):
+
+    def __mul__(self, x: object) -> object:
+        """
+        Переопредление оператора умножения в нескольких формах:
+            1. Matrix * Matrix
+            2. Matrix * int
+            3. Matrix * List[float]
+
+        Args:
+            x: объект, на который умножается матрица (число, список, или другая матрица).
+
+        Returns:
+            Matrix или List[float] в зависимости от переданного значения.
+        """
         if type(x) == float:
-            res = Matrix(self.n)
+            res = self.copy()
             for i in range(self.n):
                 for j in range(self.n):
                     res.a[i][j] = self.a[i][j]*x
@@ -114,10 +208,10 @@ class Matrix:
         # Проверяем условия когда перемножать нельзя
         if type(x) != list and type(x) != tuple():
             raise TypeError("Умножение возможно только в случае Matrix * tuple/list")
-        if len(x) != self.N:
-            raise ValueError(f"Размерность вектора должна быть = {self.N}")
+        if len(x) != self.n:
+            raise ValueError(f"Размерность вектора должна быть = {self.n}")
         # Перемножаем
         f = [0 for _ in range(self.n)]
-        for i in range(self.N):
-            f[i] = self.a[0][i] * f[i]
+        for i in range(self.n):
+            f[i] = self.a[0][i] * x[i]
         return f

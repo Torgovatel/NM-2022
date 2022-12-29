@@ -135,7 +135,6 @@ class Matrix:
         Hshd.a = H
         HshdT = Hshd.transponent()
         self.a = (Hshd * self * HshdT).a
-        print(Hshd)
         X = [[Hshd.a[j][i] for j in range(self.n)] for i in range(self.n)]
         return h, X
 
